@@ -27,18 +27,18 @@ module Clusterer
     def initialize(docs = [])
       @no_of_documents = docs.size
       docs.each do |d|
-        d.each {|w,f| self[w] = (self[w] || 0.0) + f/@no_of_documents}
+        d.each { |w, f| self[w] = (self[w] || 0.0) + f/@no_of_documents }
       end
     end
 
     def merge!(centroid)
       @vector_length = nil
-      temp = @no_of_documents/(@no_of_documents + centroid.no_of_documents)
-      self.each {|w,v| self[w] = v*temp}
+      temp           = @no_of_documents/(@no_of_documents + centroid.no_of_documents)
+      self.each { |w, v| self[w] = v*temp }
       @no_of_documents += centroid.no_of_documents
 
       temp = centroid.no_of_documents/@no_of_documents
-      centroid.each {|w,v| self[w] = (self[w] || 0) + v*temp }
+      centroid.each { |w, v| self[w] = (self[w] || 0) + v*temp }
     end
   end
 end

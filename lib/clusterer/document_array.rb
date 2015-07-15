@@ -28,16 +28,16 @@ module Clusterer
     @@term_array_position_mapper = {}
     include(Tokenizer)
 
-    def initialize(object = "",options = { })
+    def initialize(object = "", options = {})
       @object = object
-      super(@@term_array_position_mapper.size,0.0)
+      super(@@term_array_position_mapper.size, 0.0)
       send(options[:tokenizer] || :simple_tokenizer,
-           (block_given? ? yield(object) : object.to_s),
-           options[:tokenizer_options] || {}) {|term| self << term }
+        (block_given? ? yield(object) : object.to_s),
+        options[:tokenizer_options] || {}) { |term| self << term }
 
       if (idf = options[:idf])
         idf.increment_documents_count
-        self.each_with_index {|ind,val| idf << @@term_array_position_mapper[ind] if val && val > 0.0}
+        self.each_with_index { |ind, val| idf << @@term_array_position_mapper[ind] if val && val > 0.0 }
       end
     end
     
@@ -49,23 +49,23 @@ module Clusterer
       normalizing_factor = 0.0
       idf.increment_documents_count if add_term
 
-      self[@@term_array_position_mapper.size - 1] ||= 0.0 
+      self[@@term_array_position_mapper.size - 1] ||= 0.0
 
       self.each_with_index do |frequency, ind|
-        f = add_term ? (idf << term) : (idf ? idf[@@term_array_position_mapper[ind]] : 1.0)
-        self[ind] = (frequency || 0) * f
+        f                  = add_term ? (idf << term) : (idf ? idf[@@term_array_position_mapper[ind]] : 1.0)
+        self[ind]          = (frequency || 0) * f
         normalizing_factor += self[ind] ** 2
       end
       
       normalizing_factor = Math.sqrt(normalizing_factor)
       normalizing_factor = 1 if normalizing_factor.zero?
-      self.each_with_index {|frequency, ind| self[ind] = frequency/normalizing_factor}
+      self.each_with_index { |frequency, ind| self[ind] = frequency/normalizing_factor }
       @vector_length = 1.0
       self.freeze
     end
     
     def vector_length
-      @vector_length ||= Math.sqrt(self.inject(0) {|n,y| n + y*y})
+      @vector_length ||= Math.sqrt(self.inject(0) { |n, y| n + y*y })
     end
 
     def term_array_position_mapper(term)

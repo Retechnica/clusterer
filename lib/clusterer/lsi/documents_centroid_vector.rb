@@ -29,7 +29,7 @@ module Clusterer
       @no_of_documents = docs.size
       return if @no_of_documents == 0
       @centroid = docs[0]
-      docs.slice(1..docs.length).each {|d| @centroid = @centroid + d}
+      docs.slice(1..docs.length).each { |d| @centroid = @centroid + d }
       @centroid = @centroid / @no_of_documents
     end
 
@@ -40,7 +40,7 @@ module Clusterer
     def merge!(centroid)
       return unless centroid.centroid
       unless @centroid
-        @centroid = centroid.centroid
+        @centroid        = centroid.centroid
         @no_of_documents = centroid.no_of_documents
       else
         @centroid = (@centroid * @no_of_documents) + (centroid.centroid * centroid.no_of_documents)

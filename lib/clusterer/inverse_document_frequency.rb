@@ -28,7 +28,8 @@ module Clusterer
   #this class is provided.
   class DocumentsCount
     attr_reader :value
-    def initialize 
+
+    def initialize
       @value = 0
     end
 
@@ -61,9 +62,9 @@ module Clusterer
       @nf.clear
     end
     
-    def initialize (options = { })
-      @terms_count = options[:terms_count] || TermsCount.new
-      @nf = Hash.new
+    def initialize (options = {})
+      @terms_count     = options[:terms_count] || TermsCount.new
+      @nf              = Hash.new
       @documents_count = options[:documents_count] || DocumentsCount.new
     end
 

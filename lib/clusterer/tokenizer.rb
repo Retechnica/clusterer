@@ -36,7 +36,7 @@ module Clusterer
   
   module Tokenizer
     def simple_tokenizer (text, options = {})
-      text.gsub(/[^\w\s]/,"").split.each do |word|
+      text.gsub(/[^\w\s]/, "").split.each do |word|
         word.downcase!
         word = word.stem unless options[:no_stem]
         yield(word) if word.size > 2 and !STOP_WORDS.include?(word)
@@ -46,22 +46,22 @@ module Clusterer
     def simple_ngram_tokenizer (text, options = {})
       ngram = options[:ngram] || 3
       
-      ngram_list = (0..ngram).collect { []}
+      ngram_list = (0..ngram).collect { [] }
       text.split(/[\.\?\!]/).each do |sentence|
         #split the text into sentences, Ngrams cannot straddle sentences
         
-        sentence.gsub(/[^\w\s]/,"").split.each do |word|
+        sentence.gsub(/[^\w\s]/, "").split.each do |word|
           word.downcase!
           word = word.stem unless options[:no_stem]
           if word.size > 2 and !STOP_WORDS.include?(word)
             yield(word)
             2.upto(ngram) do |i|
-              ngram_list[i].delete_if {|j| j << word; j.size == i ? (yield(j.join(" ")); true) : false}
+              ngram_list[i].delete_if { |j| j << word; j.size == i ? (yield(j.join(" ")); true) : false }
               ngram_list[i] << [word]
             end
           else
             #the ngrams cannot have a stop word at beginning and end
-            2.upto(ngram) {|i| ngram_list[i].delete_if {|j| (j.size == i - 1) ? true : (j << word; false)}}
+            2.upto(ngram) { |i| ngram_list[i].delete_if { |j| (j.size == i - 1) ? true : (j << word; false) } }
           end
         end
       end

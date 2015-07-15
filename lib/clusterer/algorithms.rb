@@ -24,12 +24,12 @@ module Clusterer
   class Algorithms
     class << self
       
-private
-      def random_cluster_seeds(documents,k)
+      private
+      def random_cluster_seeds(documents, k)
         temp = []
         (1..k).collect do
           t= nil
-          while(!t || temp.include?(t))
+          while (!t || temp.include?(t))
             t= Cluster.new([documents[rand(documents.size)]]);
           end
           temp << t
@@ -37,52 +37,52 @@ private
         end
       end
       
-public
-      def kmeans(documents, k, options = { })
+      public
+      def kmeans(documents, k, options = {})
         old_clusters = Array.new(k)
-        max_iter = options[:maximum_iterations] || 10
-        clusters = options[:seeds] || random_cluster_seeds(documents, k)
-        sim_fun = options[:similarity_function] || :cosine_similarity
+        max_iter     = options[:maximum_iterations] || 10
+        clusters     = options[:seeds] || random_cluster_seeds(documents, k)
+        sim_fun      = options[:similarity_function] || :cosine_similarity
         
         iter = 0
         while (!max_iter || iter < max_iter) && clusters != old_clusters
           # puts "Iteration ....#{iter}"
-          k.times {|i| old_clusters[i] = clusters[i]; clusters[i] = []}
+          k.times { |i| old_clusters[i] = clusters[i]; clusters[i] = [] }
 
           documents.each do |document|
-            max_index = (0..k-1).max do |i,j|
+            max_index = (0..k-1).max do |i, j|
               document.send(sim_fun, old_clusters[i].centroid) <=> document.send(sim_fun, old_clusters[j].centroid)
             end
             clusters[max_index] << document
           end
 
-          k.times {|i| clusters[i] = Cluster.new(clusters[i])}
+          k.times { |i| clusters[i] = Cluster.new(clusters[i]) }
           iter += 1
         end
         return clusters
       end
 
-      def bisecting_kmeans(documents, k, options = { })
+      def bisecting_kmeans(documents, k, options = {})
         clusters = [Cluster.new(documents)]
-        while  clusters.size < k
-          lg_clus = clusters.max {|a, b| a.documents.size <=> b.documents.size} #largest cluster
+        while clusters.size < k
+          lg_clus = clusters.max { |a, b| a.documents.size <=> b.documents.size } #largest cluster
           clusters.delete(lg_clus)
-          clusters.concat(kmeans(lg_clus.documents,2))
+          clusters.concat(kmeans(lg_clus.documents, 2))
         end
         options[:refined] ? clusters = kmeans(documents, k, options.merge(:seeds => clusters)) : clusters
       end
 
-      def hierarchical(documents, k, options = { })
-        clusters = documents.collect {|d| Cluster.new([d])}
-        iter = 0
-        sim_fun = options[:similarity_function] || :upgma
+      def hierarchical(documents, k, options = {})
+        clusters                      = documents.collect { |d| Cluster.new([d]) }
+        iter                          = 0
+        sim_fun                       = options[:similarity_function] || :upgma
         options[:similarity_function] = nil
         while clusters.size > k
           # puts "Iteration ....#{iter}"
 
           pairs = []
-          clusters.each_with_index {|c,i| pairs.concat(clusters.slice(i+1,clusters.size).collect{|f| [c,f] })}
-          pair = pairs.max {|a,b| a[0].send(sim_fun, a[1]) <=> b[0].send(sim_fun, b[1]) }
+          clusters.each_with_index { |c, i| pairs.concat(clusters.slice(i+1, clusters.size).collect { |f| [c, f] }) }
+          pair = pairs.max { |a, b| a[0].send(sim_fun, a[1]) <=> b[0].send(sim_fun, b[1]) }
           clusters.delete(pair[1])
           pair[0].merge!(pair[1])
 

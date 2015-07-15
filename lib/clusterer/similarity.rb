@@ -8,15 +8,16 @@ module Clusterer
     def cosine_similarity(document)
       return 1.0 if self.empty? || document.nil? || document.empty?
       similarity = 0
-      self.each do |w,value|
+      self.each do |w, value|
         similarity += (value * (document[w] || 0))
       end
-      similarity /= (self.vector_length * document.vector_length)
+
+      similarity / (self.vector_length * document.vector_length)
     end
   end
 
   module ClusterSimilarity
-   #the algorithms given below find similarity between two clusters
+    #the algorithms given below find similarity between two clusters
     def intra_cluster_similarity(y)
       (self+y).intra_cluster_cosine_similarity - self.intra_cluster_cosine_similarity - y.intra_cluster_cosine_similarity
     end
@@ -26,8 +27,8 @@ module Clusterer
     end
 
     def upgma(y)
-      self.documents.inject(0) do |n,d|
-        n + y.documents.inject(0) {|s,e| s + d.cosine_similarity(e) }
+      self.documents.inject(0) do |n, d|
+        n + y.documents.inject(0) { |s, e| s + d.cosine_similarity(e) }
       end / (self.documents.size * y.documents.size)
     end
   end

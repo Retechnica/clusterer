@@ -50,7 +50,7 @@ module Clusterer
     end
 
     def intra_cluster_cosine_similarity
-      @intra_cluster_similarity ||= documents.inject(0) {|n,d| n + d.cosine_similarity(centroid) }
+      @intra_cluster_similarity ||= documents.inject(0) { |n, d| n + d.cosine_similarity(centroid) }
     end
   end
 end
