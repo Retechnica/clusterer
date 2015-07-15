@@ -30,10 +30,10 @@ module Clusterer
     #the partial algorithm is an adaptation of that algo
     
     def svd
-      m, n = self.row_size, self.column_size
-      tol =  0.001
-      slimit = [n/4.to_i, 6].max
-      u, z, v = DMatrix[*(1..m).to_a.collect {|i| Array.new(n,0) }], Array.new(n), DMatrix.diagonal(*Array.new(n,1))
+      m, n    = self.row_size, self.column_size
+      tol     = 0.001
+      slimit  = [n/4.to_i, 6].max
+      u, z, v = DMatrix[*(1..m).to_a.collect { |i| Array.new(n, 0) }], Array.new(n), DMatrix.diagonal(*Array.new(n, 1))
 
       nt = n
       slimit.times do
@@ -42,35 +42,35 @@ module Clusterer
           (j+1).upto(nt - 1) do |k|
             p=q=r=0
             m.times do |i|
-              p += self[i,j]*self[i,k]
-              q += self[i,j]*self[i,j]
-              r += self[i,k]*self[i,k]
+              p += self[i, j]*self[i, k]
+              q += self[i, j]*self[i, j]
+              r += self[i, k]*self[i, k]
             end
             z[j], z[k] = q, r
             if q < r
               p, q = p/r, q/r - 1
-              vt = Math.sqrt(4*p*p + q*q)
-              s = Math.sqrt(0.5*(1 - q/vt))
-              s = -s if p < 0
-              c = p / (vt*s)
-            elsif  (q * r <= tol * tol) || (p/q)*(p/r) <= tol
+              vt   = Math.sqrt(4*p*p + q*q)
+              s    = Math.sqrt(0.5*(1 - q/vt))
+              s    = -s if p < 0
+              c    = p / (vt*s)
+            elsif (q * r <= tol * tol) || (p/q)*(p/r) <= tol
               rcount -= 1
               next
             else
               p, r = p/q, 1 - r/q
-              vt = Math.sqrt(4*p*p + r*r)
-              c = Math.sqrt(0.5*(1 + r/vt))
-              s = p/(vt * c)
+              vt   = Math.sqrt(4*p*p + r*r)
+              c    = Math.sqrt(0.5*(1 + r/vt))
+              s    = p/(vt * c)
             end
             m.times do |i|
-              r = self[i,j]
-              self[i,j] = c * r + s * self[i,k]
-              self[i,k] = -s*r + c * self[i,k]
+              r          = self[i, j]
+              self[i, j] = c * r + s * self[i, k]
+              self[i, k] = -s*r + c * self[i, k]
             end
             n.times do |i|
-              r = v[i,j]
-              v[i,j] = c * r + s * v[i,k] #typo in paper replace r by s 
-              v[i,k] = -s*r + c * v[i,k]  #typo in paper replace A(i,k) by v(i,k)
+              r       = v[i, j]
+              v[i, j] = c * r + s * v[i, k] #typo in paper replace r by s
+              v[i, k] = -s*r + c * v[i, k] #typo in paper replace A(i,k) by v(i,k)
             end
           end
         end
@@ -81,29 +81,29 @@ module Clusterer
       end
       nt.times do |j|
         z[j] = Math.sqrt(z[j])
-        m.times {|i| u[i,j] = self[i,j]/z[j] }
+        m.times { |i| u[i, j] = self[i, j]/z[j] }
       end
       z = DMatrix.diagonal(*z)
       return u, z, v.transpose
     end
 
-    def []=(i,j,val)
+    def []=(i, j, val)
       @rows[i][j] = val
     end
 
     def self.join_rows(rows)
-      DMatrix[*rows.collect {|r| [*r] }]
+      DMatrix[*rows.collect { |r| [*r] }]
     end
     
     def transpose
       x = super
       y = DMatrix[]
-      y.instance_variable_set("@rows",x.instance_variable_get("@rows"))
+      y.instance_variable_set("@rows", x.instance_variable_get("@rows"))
       y
     end
     
     def self.join_columns(columns)
-      DMatrix[*columns.collect {|c| [*c] }].transpose
+      DMatrix[*columns.collect { |c| [*c] }].transpose
     end
   end
 end

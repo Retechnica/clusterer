@@ -36,6 +36,7 @@ module Clusterer
     include Linalg if $LINALG
 
     attr_reader :documents
+
     def initialize(docs)
       @documents = docs
     end
@@ -49,33 +50,33 @@ module Clusterer
     end
     
     def perform_svd (cutoff = 0.80)
-      matrix = DMatrix[*@documents].transpose
-      @t, @s, @d =  matrix.svd
-      val = @s.trace * cutoff
-      cnt = -1
-      (0..([@s.row_size, @s.column_size].min - 1)).inject(0) {|n,v| cnt += 1; (n > val) ? break : n + @s[v,v] }
-      @t = DMatrix.join_columns((0..cnt).collect {|i|@t.column(i) })
-      @d = DMatrix.join_rows((0..cnt).collect {|i| @d.row(i) })
-      @s = DMatrix.join_columns((0..cnt).collect {|i|@s.column(i) })
-      @s = DMatrix.join_rows((0..cnt).collect {|i|@s.row(i) }) unless @s.column_size == cnt
+      matrix     = DMatrix[*@documents].transpose
+      @t, @s, @d = matrix.svd
+      val        = @s.trace * cutoff
+      cnt        = -1
+      (0..([@s.row_size, @s.column_size].min - 1)).inject(0) { |n, v| cnt += 1; (n > val) ? break : n + @s[v, v] }
+      @t = DMatrix.join_columns((0..cnt).collect { |i| @t.column(i) })
+      @d = DMatrix.join_rows((0..cnt).collect { |i| @d.row(i) })
+      @s = DMatrix.join_columns((0..cnt).collect { |i| @s.column(i) })
+      @s = DMatrix.join_rows((0..cnt).collect { |i| @s.row(i) }) unless @s.column_size == cnt
     end
 
-    def cluster_documents(k, options = { })
+    def cluster_documents(k, options = {})
       rebuild_if_needed
-      cnt = -1
-      clusters = Algorithms.send(options[:algorithm] || :kmeans, 
-                                 sd.column_vectors.collect{|c| c.position = (cnt += 1); c}, k, options)
-      clusters.collect {|clus| clus.documents.collect {|d| @documents[d.position]}}
+      cnt      = -1
+      clusters = Algorithms.send(options[:algorithm] || :kmeans,
+        sd.column_vectors.collect { |c| c.position = (cnt += 1); c }, k, options)
+      clusters.collect { |clus| clus.documents.collect { |d| @documents[d.position] } }
     end
     
     def search(document, threshold = 0.5)
       rebuild_if_needed
-      vec = $LINALG ? DMatrix[document] : DMatrix[document] #DMatrix[document] #transform_to_vector(document)
-      vec = (vec * @t) * s_inv
+      vec     = $LINALG ? DMatrix[document] : DMatrix[document] #DMatrix[document] #transform_to_vector(document)
+      vec     = (vec * @t) * s_inv
       results = []
-      vec = (vec * @s).transpose # * @s
-      vec = vec.column(0) unless $LINALG
-      sd.column_vectors.each_with_index {|d,i| results << documents[i] if d.cosine_similarity(vec) >= threshold}
+      vec     = (vec * @s).transpose # * @s
+      vec     = vec.column(0) unless $LINALG
+      sd.column_vectors.each_with_index { |d, i| results << documents[i] if d.cosine_similarity(vec) >= threshold }
       results
     end
 
@@ -89,7 +90,7 @@ module Clusterer
     end
     
     def s_inv
-      @s_inv ||=  @s.inverse
+      @s_inv ||= @s.inverse
     end
   end
 end

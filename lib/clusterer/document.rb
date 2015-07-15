@@ -34,15 +34,15 @@ module Clusterer
       DocumentsCentroid
     end
 
-    def initialize (object, options = { })
+    def initialize (object, options = {})
       @object = object
       send(options[:tokenizer] || :simple_tokenizer,
-           (block_given? ? yield(object) : object.to_s),
-           options[:tokenizer_options] || {}) {|term| self << term }
+        (block_given? ? yield(object) : object.to_s),
+        options[:tokenizer_options] || {}) { |term| self << term }
       
       if (idf = options[:idf])
         idf.increment_documents_count
-        self.each_key {|term| idf << term}
+        self.each_key { |term| idf << term }
       end
     end
 
@@ -54,16 +54,16 @@ module Clusterer
       normalizing_factor = 0.0
       idf.increment_documents_count if add_term
       
-      self.each do |term,frequency|
+      self.each do |term, frequency|
         idf << term if add_term
-        f =  idf ? idf[term] : 1.0
-        self[term] = Math.log(1 + frequency) * f
+        f                  = idf ? idf[term] : 1.0
+        self[term]         = Math.log(1 + frequency) * f
         normalizing_factor += self[term] ** 2
       end
 
       normalizing_factor = Math.sqrt(normalizing_factor)
       normalizing_factor = 1 if normalizing_factor.zero?
-      self.each {|term,frequency| self[term] = frequency/normalizing_factor}
+      self.each { |term, frequency| self[term] = frequency/normalizing_factor }
       @vector_length = 1
       self.freeze
     end

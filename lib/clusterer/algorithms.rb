@@ -46,7 +46,7 @@ public
         
         iter = 0
         while (!max_iter || iter < max_iter) && clusters != old_clusters
-          puts "Iteration ....#{iter}"
+          # puts "Iteration ....#{iter}"
           k.times {|i| old_clusters[i] = clusters[i]; clusters[i] = []}
 
           documents.each do |document|
@@ -78,7 +78,7 @@ public
         sim_fun = options[:similarity_function] || :upgma
         options[:similarity_function] = nil
         while clusters.size > k
-          puts "Iteration ....#{iter}"
+          # puts "Iteration ....#{iter}"
 
           pairs = []
           clusters.each_with_index {|c,i| pairs.concat(clusters.slice(i+1,clusters.size).collect{|f| [c,f] })}
